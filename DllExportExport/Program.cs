@@ -42,20 +42,17 @@ namespace DllExportExport
                 return;
             }
 
-            var fileExports = DllExport.FromFile(path);
-            if (fileExports == null)
+            var fileExport = DllExport.FromFile(path);
+            if (fileExport == null)
             {
                 Console.WriteLine("File is not valid.");
                 return;
             }
 
-            foreach (var fileExport in fileExports)
+            Console.WriteLine(fileExport);
+            foreach (var name in fileExport.Names)
             {
-                Console.WriteLine(fileExport);
-                foreach (var name in fileExport.Names)
-                {
-                    Console.WriteLine(" " + name);
-                }
+                Console.WriteLine(" " + name);
             }
         }
 

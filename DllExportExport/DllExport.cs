@@ -21,14 +21,13 @@ namespace DllExportExport
 
         public override string ToString() => Format + " " + FilePath;
 
-        public static IReadOnlyList<DllExport> FromFile(string filePath)
+        public static DllExport FromFile(string filePath)
         {
             if (filePath == null)
                 throw new ArgumentNullException(nameof(filePath));
 
             try
             {
-                var list = new List<DllExport>();
                 using (var file = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
                 {
                     if (file.Length <= 60)
@@ -59,6 +58,7 @@ namespace DllExportExport
                     if (format != PEFormat.PE32 && format != PEFormat.PE32Plus)
                         return null;
 
+                    var export = new DllExport(filePath, format);
                     file.Seek(optionalHeader + (format == PEFormat.PE32 ? 92 : 108), SeekOrigin.Begin);
                     var numberOfRvaAndSizes = br.ReadInt32();
                     if (numberOfRvaAndSizes != 16)
@@ -67,7 +67,7 @@ namespace DllExportExport
                     var exportVirtualAddress = br.ReadUInt32();
                     var exportSize = br.ReadUInt32();
                     if (exportVirtualAddress == 0 || exportSize == 0)
-                        return list;
+                        return export;
 
                     file.Seek(numberOfRvaAndSizes * 8 - 8, SeekOrigin.Current);
                     var sections = new List<Section>();
@@ -98,9 +98,6 @@ namespace DllExportExport
 
                     var namesOffset = rvaToOffset(namePointerRva);
                     file.Seek(namesOffset, SeekOrigin.Begin);
-
-                    var export = new DllExport(filePath, format);
-                    list.Add(export);
 
                     for (var i = 0; i < numberOfNames; i++)
                     {
@@ -133,10 +130,10 @@ namespace DllExportExport
                         }
                         return 0xFFFFFFFF;
                     }
+                    return export;
                 }
-                return list;
             }
-            catch (UnauthorizedAccessException e)
+            catch (UnauthorizedAccessException)
             {
                 return null;
             }
@@ -174,13 +171,10 @@ namespace DllExportExport
             enumerationOptions ??= new EnumerationOptions();
             foreach (var file in Directory.EnumerateFiles(directoryPath, searchPattern, enumerationOptions))
             {
-                var exports = FromFile(file);
-                if (exports != null)
+                var export = FromFile(file);
+                if (export != null)
                 {
-                    foreach (var export in exports)
-                    {
-                        yield return export;
-                    }
+                    yield return export;
                 }
             }
         }
