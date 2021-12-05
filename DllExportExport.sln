@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31911.196
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DllExportExport", "DllExportExport\DllExportExport.csproj", "{4C716D1F-9754-4EEA-B353-71A20AABD08B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4C716D1F-9754-4EEA-B353-71A20AABD08B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C716D1F-9754-4EEA-B353-71A20AABD08B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C716D1F-9754-4EEA-B353-71A20AABD08B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C716D1F-9754-4EEA-B353-71A20AABD08B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {180704FC-89A2-40E5-9E44-79813FA680AB}
+	EndGlobalSection
+EndGlobal
