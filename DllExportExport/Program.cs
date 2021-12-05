@@ -27,10 +27,7 @@ namespace DllExportExport
                 var recursive = CommandLine.GetArgument("s", false);
                 Console.WriteLine("Recursive: " + recursive);
 
-                var options = new EnumerationOptions();
-                options.RecurseSubdirectories = recursive;
-
-                var dirExports = DllExport.FromDirectory(path, null, options);
+                var dirExports = DllExport.FromDirectory(path, null, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
                 foreach (var dirExport in dirExports)
                 {
                     Console.WriteLine(dirExport);

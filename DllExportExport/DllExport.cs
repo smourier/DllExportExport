@@ -76,7 +76,7 @@ namespace DllExportExport
                         var section = new Section();
                         sections.Add(section);
 
-                        section.Name = Encoding.ASCII.GetString(br.ReadBytes(8)).Replace("\0", string.Empty).Nullify();
+                        section.Name = Encoding.ASCII.GetString(br.ReadBytes(8)).Replace("\0", string.Empty);
                         section.VirtualSize = br.ReadUInt32();
                         section.VirtualAddress = br.ReadUInt32();
                         section.SizeOfRawData = br.ReadUInt32();
@@ -162,14 +162,13 @@ namespace DllExportExport
             public override string ToString() => Name;
         }
 
-        public static IEnumerable<DllExport> FromDirectory(string directoryPath, string searchPattern = null, EnumerationOptions enumerationOptions = null)
+        public static IEnumerable<DllExport> FromDirectory(string directoryPath, string searchPattern = null, SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
             if (directoryPath == null)
                 throw new ArgumentNullException(nameof(directoryPath));
 
-            searchPattern ??= "*.*";
-            enumerationOptions ??= new EnumerationOptions();
-            foreach (var file in Directory.EnumerateFiles(directoryPath, searchPattern, enumerationOptions))
+            searchPattern = searchPattern ?? "*.*";
+            foreach (var file in Directory.EnumerateFiles(directoryPath, searchPattern, searchOption))
             {
                 var export = FromFile(file);
                 if (export != null)
