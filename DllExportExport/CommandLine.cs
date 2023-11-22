@@ -34,7 +34,7 @@ namespace DllExportExport
                 var named = false;
                 if (arg[0] == '-' || arg[0] == '/')
                 {
-                    arg = arg.Substring(1);
+                    arg = arg[1..];
                     named = true;
                 }
 
@@ -48,8 +48,8 @@ namespace DllExportExport
                 }
                 else
                 {
-                    name = arg.Substring(0, pos).Trim();
-                    value = arg.Substring(pos + 1).Trim();
+                    name = arg[..pos].Trim();
+                    value = arg[(pos + 1)..].Trim();
                 }
 
                 _positionArguments[i - 1] = arg;
@@ -73,7 +73,7 @@ namespace DllExportExport
                 for (var i = 0; i < line.Length; i++)
                 {
                     if (line[i] == ' ' && !inParens)
-                        return line.Substring(i + 1).TrimStart();
+                        return line[(i + 1)..].TrimStart();
 
                     if (line[i] == '"')
                     {
@@ -94,10 +94,10 @@ namespace DllExportExport
                 if (arg.StartsWith("-", StringComparison.Ordinal) || arg.StartsWith("/", StringComparison.Ordinal))
                 {
                     var pos = arg.IndexOfAny(new[] { '=', ':' }, 1);
-                    var argName = pos < 0 ? arg.Substring(1) : arg.Substring(1, pos - 1);
+                    var argName = pos < 0 ? arg[1..] : arg[1..pos];
                     if (string.Compare(name, argName, StringComparison.OrdinalIgnoreCase) == 0)
                     {
-                        var value = pos < 0 ? string.Empty : arg.Substring(pos + 1).Trim();
+                        var value = pos < 0 ? string.Empty : arg[(pos + 1)..].Trim();
                         if (value.Length == 0)
                         {
                             if (typeof(T) == typeof(bool)) // special case for bool args: if it's there, return true
@@ -114,8 +114,7 @@ namespace DllExportExport
 
         public static string GetNullifiedArgument(string name, string defaultValue = null)
         {
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
+            ArgumentNullException.ThrowIfNull(name);
 
             if (!_namedArguments.TryGetValue(name, out string s))
                 return defaultValue.Nullify();
@@ -149,8 +148,7 @@ namespace DllExportExport
 
         public static T GetArgument<T>(string name, T defaultValue = default, IFormatProvider provider = null)
         {
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
+            ArgumentNullException.ThrowIfNull(name);
 
             if (!_namedArguments.TryGetValue(name, out string s))
                 return defaultValue;
@@ -163,19 +161,15 @@ namespace DllExportExport
 
         public static bool HasArgument(string name)
         {
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
+            ArgumentNullException.ThrowIfNull(name);
 
             return _namedArguments.TryGetValue(name, out _);
         }
 
         public static object GetArgument(string name, object defaultValue, Type conversionType, IFormatProvider provider = null)
         {
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
-
-            if (conversionType == null)
-                throw new ArgumentNullException(nameof(conversionType));
+            ArgumentNullException.ThrowIfNull(name);
+            ArgumentNullException.ThrowIfNull(conversionType);
 
             if (!_namedArguments.TryGetValue(name, out string s))
                 return defaultValue;

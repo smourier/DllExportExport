@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -13,7 +12,7 @@ namespace DllExportExport
     public static class Conversions
     {
         private static readonly char[] _enumSeparators = new char[] { ',', ';', '+', '|', ' ' };
-        private static readonly Regex _decodeUnicode = new Regex(@"\\u(?<v>[a-zA-Z0-9]{4})", RegexOptions.Compiled);
+        private static readonly Regex _decodeUnicode = new(@"\\u(?<v>[a-zA-Z0-9]{4})", RegexOptions.Compiled);
         private static readonly string[] _dateFormatsUtc = { "yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'", "yyyy'-'MM'-'dd'T'HH':'mm'Z'", "yyyyMMdd'T'HH':'mm':'ss'Z'" };
 
         // we don't want unspecified datetimes
@@ -22,8 +21,7 @@ namespace DllExportExport
 
         public static bool IsFlagsEnum(Type enumType)
         {
-            if (enumType == null)
-                throw new ArgumentNullException(nameof(enumType));
+            ArgumentNullException.ThrowIfNull(enumType);
 
             if (!enumType.IsEnum)
                 throw new ArgumentException(null, nameof(enumType));
@@ -34,8 +32,7 @@ namespace DllExportExport
         public static T CoerceToEnum<T>(object input) => (T)CoerceToEnum(typeof(T), input);
         public static object CoerceToEnum(Type enumType, object input)
         {
-            if (enumType == null)
-                throw new ArgumentNullException(nameof(enumType));
+            ArgumentNullException.ThrowIfNull(enumType);
 
             if (!enumType.IsEnum)
                 throw new ArgumentException(null, nameof(enumType));
@@ -86,8 +83,7 @@ namespace DllExportExport
         public static bool TryCoerceToEnum<T>(object input, out object value) => TryCoerceToEnum(typeof(T), input, out value);
         public static bool TryCoerceToEnum(Type enumType, object input, out object value)
         {
-            if (enumType == null)
-                throw new ArgumentNullException(nameof(enumType));
+            ArgumentNullException.ThrowIfNull(enumType);
 
             if (!enumType.IsEnum)
                 throw new ArgumentException(null, nameof(enumType));
@@ -112,10 +108,9 @@ namespace DllExportExport
 
         public static Type GetEnumeratedType(Type collectionType)
         {
-            if (collectionType == null)
-                throw new ArgumentNullException(nameof(collectionType));
+            ArgumentNullException.ThrowIfNull(collectionType);
 
-            foreach (Type type in collectionType.GetInterfaces())
+            foreach (var type in collectionType.GetInterfaces())
             {
                 if (!type.IsGenericType)
                     continue;
@@ -246,18 +241,14 @@ namespace DllExportExport
             if (text == null)
                 return null;
 
-            if (encoding == null)
-            {
-                encoding = Encoding.Unicode;
-            }
+            encoding ??= Encoding.Unicode;
 
             return ToHexaDump(encoding.GetBytes(text));
         }
 
         public static string ToHexaDump(this byte[] bytes, string prefix = null)
         {
-            if (bytes == null)
-                throw new ArgumentNullException(nameof(bytes));
+            ArgumentNullException.ThrowIfNull(bytes);
 
             return ToHexaDump(bytes, 0, bytes.Length, prefix, true);
         }
@@ -266,7 +257,7 @@ namespace DllExportExport
         public static string ToHexaDump(this IntPtr ptr, int offset, int count, string prefix = null, bool addHeader = true)
         {
             if (ptr == IntPtr.Zero)
-                throw new ArgumentNullException(nameof(ptr));
+                throw new ArgumentException(null, nameof(ptr));
 
             var bytes = new byte[count];
             Marshal.Copy(ptr, bytes, offset, count);
@@ -276,8 +267,7 @@ namespace DllExportExport
         public static string ToHexaDump(this byte[] bytes, int count) => ToHexaDump(bytes, 0, count, null, true);
         public static string ToHexaDump(this byte[] bytes, int offset, int count, string prefix = null, bool addHeader = true)
         {
-            if (bytes == null)
-                throw new ArgumentNullException(nameof(bytes));
+            ArgumentNullException.ThrowIfNull(bytes);
 
             if (offset < 0)
             {
@@ -421,12 +411,12 @@ namespace DllExportExport
             {
                 if ((text[8] == 'T' || text[8] == 't') && text[11] == ':' && text[14] == ':')
                 {
-                    _ = int.TryParse(text.Substring(0, 4), out var year);
-                    _ = int.TryParse(text.Substring(4, 2), out var month);
-                    _ = int.TryParse(text.Substring(6, 2), out var day);
-                    _ = int.TryParse(text.Substring(9, 2), out var hour);
-                    _ = int.TryParse(text.Substring(12, 2), out var minute);
-                    _ = int.TryParse(text.Substring(15, 2), out var second);
+                    _ = int.TryParse(text[..4], out var year);
+                    _ = int.TryParse(text.AsSpan(4, 2), out var month);
+                    _ = int.TryParse(text.AsSpan(6, 2), out var day);
+                    _ = int.TryParse(text.AsSpan(9, 2), out var hour);
+                    _ = int.TryParse(text.AsSpan(12, 2), out var minute);
+                    _ = int.TryParse(text.AsSpan(15, 2), out var second);
                     if (month > 0 && month < 13 &&
                         day > 0 && day < 32 &&
                         year >= 0 &&
@@ -488,8 +478,7 @@ namespace DllExportExport
         public static bool TryChangeType(object input, Type conversionType, out object value) => TryChangeType(input, conversionType, null, out value);
         public static bool TryChangeType(object input, Type conversionType, IFormatProvider provider, out object value)
         {
-            if (conversionType == null)
-                throw new ArgumentNullException(nameof(conversionType));
+            ArgumentNullException.ThrowIfNull(conversionType);
 
             if (conversionType == typeof(object))
             {
@@ -1409,14 +1398,10 @@ namespace DllExportExport
 
         public static bool TryGetNumber(object input, Type conversionType, IFormatProvider provider, out object value)
         {
-            if (conversionType == null)
-                throw new ArgumentNullException(nameof(conversionType));
+            ArgumentNullException.ThrowIfNull(conversionType);
 
             value = Activator.CreateInstance(conversionType);
-            if (provider == null)
-            {
-                provider = CultureInfo.InvariantCulture;
-            }
+            provider ??= CultureInfo.InvariantCulture;
 
             if (input is byte[] bytes)
             {
@@ -1487,14 +1472,14 @@ namespace DllExportExport
                 return false;
             }
 
-            string s = input as string;
+            var s = input as string;
             if (input == null || s != null)
                 return TryGetNumber(s, conversionType, provider, out value);
 
-            Type type = input.GetType();
+            var type = input.GetType();
             if (conversionType == typeof(object))
             {
-                TypeCode tc = Type.GetTypeCode(type);
+                var tc = Type.GetTypeCode(type);
                 switch (tc)
                 {
                     case TypeCode.Int32:
@@ -1582,7 +1567,7 @@ namespace DllExportExport
 
             if (input[0] == 'x' || input[0] == 'X')
             {
-                output = input.Substring(1);
+                output = input[1..];
                 return true;
             }
 
@@ -1594,7 +1579,7 @@ namespace DllExportExport
 
             if (input[1] == 'x' || input[1] == 'X')
             {
-                output = input.Substring(2);
+                output = input[2..];
                 return true;
             }
 
@@ -1604,14 +1589,10 @@ namespace DllExportExport
 
         public static bool TryGetNumber(string input, Type conversionType, IFormatProvider provider, out object value)
         {
-            if (conversionType == null)
-                throw new ArgumentNullException(nameof(conversionType));
+            ArgumentNullException.ThrowIfNull(conversionType);
 
             value = Activator.CreateInstance(conversionType);
-            if (provider == null)
-            {
-                provider = CultureInfo.InvariantCulture;
-            }
+            provider ??= CultureInfo.InvariantCulture;
 
             if (input == null)
                 return false;
@@ -1718,16 +1699,14 @@ namespace DllExportExport
 
         public static ulong EnumToUInt64(string text, Type enumType)
         {
-            if (enumType == null)
-                throw new ArgumentNullException(nameof(enumType));
+            ArgumentNullException.ThrowIfNull(enumType);
 
             return EnumToUInt64(ChangeType(text, enumType));
         }
 
         public static ulong EnumToUInt64(object value)
         {
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
+            ArgumentNullException.ThrowIfNull(value);
 
             var typeCode = Convert.GetTypeCode(value);
             switch (typeCode)
@@ -1802,8 +1781,7 @@ namespace DllExportExport
 
         public static object EnumToObject(Type enumType, object value)
         {
-            if (enumType == null)
-                throw new ArgumentNullException(nameof(enumType));
+            ArgumentNullException.ThrowIfNull(enumType);
 
             if (!enumType.IsEnum)
                 throw new ArgumentException(null, nameof(enumType));
@@ -1841,8 +1819,7 @@ namespace DllExportExport
 
         public static object ToEnum(object obj, Enum defaultValue)
         {
-            if (defaultValue == null)
-                throw new ArgumentNullException(nameof(defaultValue));
+            ArgumentNullException.ThrowIfNull(defaultValue);
 
             if (obj == null)
                 return defaultValue;
@@ -1858,8 +1835,7 @@ namespace DllExportExport
 
         public static object ToEnum(string text, Type enumType)
         {
-            if (enumType == null)
-                throw new ArgumentNullException(nameof(enumType));
+            ArgumentNullException.ThrowIfNull(enumType);
 
             EnumTryParse(enumType, text, out var value);
             return value;
@@ -1867,8 +1843,7 @@ namespace DllExportExport
 
         public static Enum ToEnum(string text, Enum defaultValue)
         {
-            if (defaultValue == null)
-                throw new ArgumentNullException(nameof(defaultValue));
+            ArgumentNullException.ThrowIfNull(defaultValue);
 
             if (EnumTryParse(defaultValue.GetType(), text, out var value))
                 return (Enum)value;
@@ -1878,8 +1853,7 @@ namespace DllExportExport
 
         public static bool EnumTryParse(Type type, object input, out object value)
         {
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
+            ArgumentNullException.ThrowIfNull(type);
 
             if (!type.IsEnum)
                 throw new ArgumentException(null, nameof(type));
@@ -1900,7 +1874,7 @@ namespace DllExportExport
 
             if (stringInput.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
             {
-                if (ulong.TryParse(stringInput.Substring(2), NumberStyles.HexNumber, null, out var ulx))
+                if (ulong.TryParse(stringInput[2..], NumberStyles.HexNumber, null, out var ulx))
                 {
                     value = ToEnum(ulx.ToString(CultureInfo.InvariantCulture), type);
                     return true;
@@ -1963,8 +1937,7 @@ namespace DllExportExport
 
         public static bool IsGenericList(Type type, out Type elementType)
         {
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
+            ArgumentNullException.ThrowIfNull(type);
 
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
             {
@@ -1978,45 +1951,16 @@ namespace DllExportExport
 
         public static bool IsReallyValueType(this Type type)
         {
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
+            ArgumentNullException.ThrowIfNull(type);
 
             return type.IsValueType && !IsNullable(type);
         }
 
         public static bool IsNullable(this Type type)
         {
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
+            ArgumentNullException.ThrowIfNull(type);
 
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
-
-        public static string ConvertToUnsecureString(this SecureString securePassword)
-        {
-            if (securePassword == null)
-                throw new ArgumentNullException(nameof(securePassword));
-
-            var unmanagedString = IntPtr.Zero;
-            try
-            {
-                unmanagedString = Marshal.SecureStringToGlobalAllocUnicode(securePassword);
-                return Marshal.PtrToStringUni(unmanagedString);
-            }
-            finally
-            {
-                Marshal.ZeroFreeGlobalAllocUnicode(unmanagedString);
-            }
-        }
-
-        public static string FormatByteSize(long size)
-        {
-            var sb = new StringBuilder(64);
-            StrFormatByteSizeW(size, sb, sb.Capacity);
-            return sb.ToString();
-        }
-
-        [DllImport("shlwapi", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        private static extern long StrFormatByteSizeW(long qdw, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszBuf, int cchBuf);
     }
 }

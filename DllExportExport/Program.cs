@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
@@ -19,7 +18,7 @@ namespace DllExportExport
                 return;
             }
 
-            path = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), path);
+            path = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath), path);
             Console.WriteLine("Path: " + path);
 
             if (Directory.Exists(path))
